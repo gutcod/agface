@@ -7,6 +7,8 @@ import Particles from "react-particles-js";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition.component";
 import Signin from "./components/Signin/Signin.component";
 import Register from "./components/Register/Register.component";
+import Modal from "./components/Modal/Modal";
+import Profile from "./components/Profile/Profile";
 
 const particleOptions = {
   particles: {
@@ -31,14 +33,16 @@ const initialState = {
   input: "",
   imageUrl: "",
   boxes: [],
-  route: "home", //signin
-  isSignedIn: true, //false
+  route: "sognin", //signin
+  isSignedIn: false, //false
+  isProfileOpen: false,
   user: {
     id: "",
     email: "",
     name: "",
     entries: "",
     joined: "",
+    age: "",
   },
 };
 
@@ -110,6 +114,7 @@ class App extends Component {
       })
       .catch(err => console.log(err));
   };
+
   onRouteChange = route => {
     if (route === "signout") {
       return this.setState(initialState);
@@ -118,12 +123,27 @@ class App extends Component {
     }
     this.setState({ route: route });
   };
+  toggleModal = () => {
+    this.setState(prevState => ({
+      ...prevState,
+      isProfileOpen: !prevState.isProfileOpen,
+    }));
+  };
   render() {
-    const { boxes, imageUrl, route, isSignedIn } = this.state;
+    const { boxes, imageUrl, route, isSignedIn, isProfileOpen, user } = this.state;
     return (
       <div className='App'>
         <Particles params={particleOptions} className='particles' />
-        <Navigation onRouteChange={this.onRouteChange} isSignedIn={isSignedIn} />
+        <Navigation
+          onRouteChange={this.onRouteChange}
+          isSignedIn={isSignedIn}
+          toggleModal={this.toggleModal}
+        />
+        {isProfileOpen && (
+          <Modal>
+            <Profile isProfileOpen={isProfileOpen} toggleModal={this.toggleModal} user={user} />
+          </Modal>
+        )}
         {route === "home" ? (
           <div>
             <Rank name={this.state.user.name} entries={this.state.user.entries} />
