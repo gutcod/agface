@@ -15,7 +15,8 @@ class Signin extends React.Component {
     this.setState({ signInPassword: event.target.value });
   };
   onSubmitSignIn = () => {
-    fetch("https://dry-wave-12251.herokuapp.com/signin", {
+    //"https://dry-wave-12251.herokuapp.com/signin"
+    fetch("http://localhost:3300/signin", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -35,7 +36,7 @@ class Signin extends React.Component {
   render() {
     const { onRouteChange } = this.props;
     return (
-      <div className='br3 ba dark-gray b--black-10 mv4 w-100 w-50-m w-25-l mw center'>
+      <article className='br3 ba b--black-10 mv4 w-100 w-50-m w-25-l mw6 shadow-5 center'>
         <main className='pa4 black-80'>
           <div className='measure'>
             <fieldset id='sign_up' className='ba b--transparent ph0 mh0'>
@@ -70,13 +71,13 @@ class Signin extends React.Component {
               />
             </div>
             <div className='lh-copy mt3'>
-              <a onClick={() => onRouteChange("register")} className='f6 link dim black db'>
+              <span onClick={() => onRouteChange("register")} className='f6 link dim black db'>
                 Register
-              </a>
+              </span>
             </div>
           </div>
         </main>
-      </div>
+      </article>
     );
   }
 }

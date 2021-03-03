@@ -30,9 +30,9 @@ const particleOptions = {
 const initialState = {
   input: "",
   imageUrl: "",
-  box: {},
-  route: "signin",
-  isSignedIn: false,
+  boxes: [],
+  route: "home", //signin
+  isSignedIn: true, //false
   user: {
     id: "",
     email: "",
@@ -49,17 +49,19 @@ class App extends Component {
   }
 
   calculateFaceLocation = data => {
-    const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
-    //DOM Manipulation
-    const image = document.getElementById("inputimage");
-    const width = Number(image.width);
-    const height = Number(image.height);
-    return {
-      leftCol: clarifaiFace.left_col * width,
-      topRow: clarifaiFace.top_row * height,
-      rightCol: width - clarifaiFace.right_col * width,
-      bottomRow: height - clarifaiFace.bottom_row * height,
-    };
+    return data.outputs[0].data.regions.map(face => {
+      const clarifaiFace = face.region_info.bounding_box;
+      //DOM Manipulation
+      const image = document.getElementById("inputimage");
+      const width = Number(image.width);
+      const height = Number(image.height);
+      return {
+        leftCol: clarifaiFace.left_col * width,
+        topRow: clarifaiFace.top_row * height,
+        rightCol: width - clarifaiFace.right_col * width,
+        bottomRow: height - clarifaiFace.bottom_row * height,
+      };
+    });
   };
   loadUser = data => {
     this.setState({
@@ -72,8 +74,8 @@ class App extends Component {
       },
     });
   };
-  displayFaceBox = box => {
-    this.setState({ box: box });
+  displayFaceBox = boxes => {
+    this.setState({ boxes: boxes });
   };
 
   onInputChange = event => {
@@ -81,7 +83,7 @@ class App extends Component {
   };
   onSubmit = () => {
     this.setState({ imageUrl: this.state.input });
-    fetch("https://dry-wave-12251.herokuapp.com/imageurl", {
+    fetch("http://localhost:3300/imageurl", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -91,7 +93,7 @@ class App extends Component {
       .then(response => response.json())
       .then(response => {
         if (response) {
-          fetch("https://dry-wave-12251.herokuapp.com/image", {
+          fetch("http://localhost:3300/image", {
             method: "put",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -110,14 +112,14 @@ class App extends Component {
   };
   onRouteChange = route => {
     if (route === "signout") {
-      this.setState(initialState);
+      return this.setState(initialState);
     } else if (route === "home") {
       this.setState({ isSignedIn: true });
     }
     this.setState({ route: route });
   };
   render() {
-    const { box, imageUrl, route, isSignedIn } = this.state;
+    const { boxes, imageUrl, route, isSignedIn } = this.state;
     return (
       <div className='App'>
         <Particles params={particleOptions} className='particles' />
@@ -126,7 +128,7 @@ class App extends Component {
           <div>
             <Rank name={this.state.user.name} entries={this.state.user.entries} />
             <ImageLinkForm onInputChange={this.onInputChange} onSubmit={this.onSubmit} />
-            <FaceRecognition imageUrl={imageUrl} box={box} />
+            <FaceRecognition imageUrl={imageUrl} boxes={boxes} />
           </div>
         ) : route === "signin" ? (
           <Signin onRouteChange={this.onRouteChange} loadUser={this.loadUser} />
