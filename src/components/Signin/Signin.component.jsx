@@ -8,12 +8,18 @@ class Signin extends React.Component {
       signInPassword: "",
     };
   }
+  saveAuthTokenInSession = token => {
+    window.sessionStorage.setItem("token", token);
+  };
+
   onEmailChange = event => {
     this.setState({ signInEmail: event.target.value });
   };
+
   onPasswordChange = event => {
     this.setState({ signInPassword: event.target.value });
   };
+
   onSubmitSignIn = () => {
     //"https://dry-wave-12251.herokuapp.com/signin"
     fetch("http://localhost:3300/signin", {
@@ -26,9 +32,23 @@ class Signin extends React.Component {
     })
       .then(response => response.json())
       .then(data => {
-        if (data.id) {
-          this.props.loadUser(data);
-          this.props.onRouteChange("home");
+        if (data.userId && data.success === "true") {
+          this.saveAuthTokenInSession(data.token);
+
+          fetch(`http://localhost:3300/profile/${data.userId}`, {
+            method: "get",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: data.token,
+            },
+          })
+            .then(resp => resp.json())
+            .then(user => {
+              if (user && user.email) {
+                this.props.loadUser(user);
+                this.props.onRouteChange("home");
+              }
+            });
         }
       });
   };
